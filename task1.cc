@@ -10,6 +10,7 @@
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
+#include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
 //------------------------------------
@@ -25,7 +26,7 @@
 #include "ns3/trace-source-accessor.h"
 //------------------------------------
 
-
+/*
 // ============================================ Network Topology ============================================
 //
 //                                                      n4
@@ -43,7 +44,7 @@
 //                                                      n5
 //
 // ==========================================================================================================
-
+*/
 
 using namespace ns3;
 
@@ -60,7 +61,7 @@ main(int argc, char* argv[])
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    uint32_t nodesNum = 8;
+    uint32_t nodesNum = 9;
     //uint32_t nCsmaSX = 2;
     //uint32_t nCsmaDX = 2;
 
@@ -164,6 +165,9 @@ main(int argc, char* argv[])
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    InternetStackHelper allStack;
+    allStack.Install(allNodes);
+
     //------ IP Address csmaSX -------------
     
     Ipv4AddressHelper ipAddCsmaSX;      //Definisco blocco di indirizzi
@@ -174,42 +178,42 @@ main(int argc, char* argv[])
     //------ IP Address csmaDX -------------
     
     Ipv4AddressHelper ipAddCsmaDX;      //Definisco blocco di indirizzi
-    ipAddCsmaDX.SetBase("192.148.1.0", "255.255.255.0");    //Struttura del blocco di indirizzi
+    ipAddCsmaDX.SetBase("192.148.2.0", "255.255.255.0");    //Struttura del blocco di indirizzi     <--- Cambio da 192.148.1.0 a 192.148.2.0
     Ipv4InterfaceContainer csmaDXInterfaces;    //Definisco un container con devices e IP Set
     csmaDXInterfaces = ipAddCsmaDX.Assign(csmaDXDevices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n2-n3 LINK ---------
 
     Ipv4AddressHelper ipAddNd23;      //Definisco blocco di indirizzi
-    ipAddNd23.SetBase("10.1.1.0", "255.255.255.254");    //Struttura del blocco di indirizzi
+    ipAddNd23.SetBase("10.1.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
     Ipv4InterfaceContainer nd23Interfaces;    //Definisco un container con devices e IP Set
     nd23Interfaces = ipAddNd23.Assign(PPP23Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n3-n4 LINK ---l0----
 
     Ipv4AddressHelper ipAddNd34;      //Definisco blocco di indirizzi
-    ipAddNd34.SetBase("10.0.1.0", "255.255.255.254");    //Struttura del blocco di indirizzi
+    ipAddNd34.SetBase("10.0.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
     Ipv4InterfaceContainer nd34Interfaces;    //Definisco un container con devices e IP Set
     nd34Interfaces = ipAddNd34.Assign(PPP34Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n3-n5 LINK ---l1----
 
     Ipv4AddressHelper ipAddNd35;      //Definisco blocco di indirizzi
-    ipAddNd35.SetBase("10.0.2.0", "255.255.255.254");    //Struttura del blocco di indirizzi
+    ipAddNd35.SetBase("10.0.2.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
     Ipv4InterfaceContainer nd35Interfaces;    //Definisco un container con devices e IP Set
     nd35Interfaces = ipAddNd35.Assign(PPP35Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n6-n4 LINK ---l3----
 
     Ipv4AddressHelper ipAddNd64;      //Definisco blocco di indirizzi
-    ipAddNd64.SetBase("10.0.4.0", "255.255.255.254");    //Struttura del blocco di indirizzi
+    ipAddNd64.SetBase("10.0.4.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
     Ipv4InterfaceContainer nd64Interfaces;    //Definisco un container con devices e IP Set
     nd64Interfaces = ipAddNd64.Assign(PPP64Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n6-n5 LINK ---l2----
 
     Ipv4AddressHelper ipAddNd65;      //Definisco blocco di indirizzi
-    ipAddNd65.SetBase("10.0.3.0", "255.255.255.254");    //Struttura del blocco di indirizzi
+    ipAddNd65.SetBase("10.0.3.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
     Ipv4InterfaceContainer nd65Interfaces;    //Definisco un container con devices e IP Set
     nd65Interfaces = ipAddNd65.Assign(PPP65Devices);   //Assegno il blocco di indirizzi ai devices
 
@@ -220,10 +224,25 @@ main(int argc, char* argv[])
     //Adesso bisogna inserire un protocollo di comunicazione, le applicazioni per la generazione 
     //del traffico di dati, definire client e server ed i Trace :)
 
+    if(configuration == 0){
 
 
 
 
+
+    }
+    else if(configuration == 1){
+
+
+
+
+    }
+    else if(configuration == 2){
+
+
+
+
+    }
 
 
 
@@ -237,7 +256,7 @@ main(int argc, char* argv[])
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    AsciiTraceHelper myTracASCII;
+    //AsciiTraceHelper myTracASCII;
 
     //SI ATTENDE LA CREAZIONE DI SERVER E CLIENT PER ABILITARE L'ASCII TRACING
 
