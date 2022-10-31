@@ -31,15 +31,15 @@
 //
 //                                                      n4
 //                                                    /    \
-//                                  10.0.1.0/31   ___/      \___   10.0.4.0/31
+//                                  10.0.1.0/30   ___/      \___   10.0.4.0/30
 //                                            ___/              \___
 //                                           /                      \
-//                       10.1.1.0/31        /                        \   
+//                       10.1.1.0/30        /                        \   
 //  n0 --- n1 --- n2 ------------------- n3                            n6 ----------------- n7 -- n8
 //   |     |      |     point-to-point      \                        /  |                   |     |
 //  ================                         \___                ___/  ==============================
-// LAN 192.148.1.0/24                            \___        ___/                  LAN 192.148.1.0/24
-//                                  10.0.2.0/31      \      /      10.0.3.0/31
+// LAN 192.148.1.0/24                            \___        ___/                  LAN 192.148.2.0/24
+//                                  10.0.2.0/30      \      /      10.0.3.0/30
 //                                                    \    /
 //                                                      n5
 //
@@ -178,42 +178,42 @@ main(int argc, char* argv[])
     //------ IP Address csmaDX -------------
     
     Ipv4AddressHelper ipAddCsmaDX;      //Definisco blocco di indirizzi
-    ipAddCsmaDX.SetBase("192.148.2.0", "255.255.255.0");    //Struttura del blocco di indirizzi     <--- Cambio da 192.148.1.0 a 192.148.2.0
+    ipAddCsmaDX.SetBase("192.148.2.0", "255.255.255.0");    //Struttura del blocco di indirizzi     
     Ipv4InterfaceContainer csmaDXInterfaces;    //Definisco un container con devices e IP Set
     csmaDXInterfaces = ipAddCsmaDX.Assign(csmaDXDevices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n2-n3 LINK ---------
 
     Ipv4AddressHelper ipAddNd23;      //Definisco blocco di indirizzi
-    ipAddNd23.SetBase("10.1.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
+    ipAddNd23.SetBase("10.1.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    
     Ipv4InterfaceContainer nd23Interfaces;    //Definisco un container con devices e IP Set
     nd23Interfaces = ipAddNd23.Assign(PPP23Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n3-n4 LINK ---l0----
 
     Ipv4AddressHelper ipAddNd34;      //Definisco blocco di indirizzi
-    ipAddNd34.SetBase("10.0.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
+    ipAddNd34.SetBase("10.0.1.0", "255.255.255.252");    //Struttura del blocco di indirizzi    
     Ipv4InterfaceContainer nd34Interfaces;    //Definisco un container con devices e IP Set
     nd34Interfaces = ipAddNd34.Assign(PPP34Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n3-n5 LINK ---l1----
 
     Ipv4AddressHelper ipAddNd35;      //Definisco blocco di indirizzi
-    ipAddNd35.SetBase("10.0.2.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
+    ipAddNd35.SetBase("10.0.2.0", "255.255.255.252");    //Struttura del blocco di indirizzi    
     Ipv4InterfaceContainer nd35Interfaces;    //Definisco un container con devices e IP Set
     nd35Interfaces = ipAddNd35.Assign(PPP35Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n6-n4 LINK ---l3----
 
     Ipv4AddressHelper ipAddNd64;      //Definisco blocco di indirizzi
-    ipAddNd64.SetBase("10.0.4.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
+    ipAddNd64.SetBase("10.0.4.0", "255.255.255.252");    //Struttura del blocco di indirizzi    
     Ipv4InterfaceContainer nd64Interfaces;    //Definisco un container con devices e IP Set
     nd64Interfaces = ipAddNd64.Assign(PPP64Devices);   //Assegno il blocco di indirizzi ai devices
 
     //------ IP Address n6-n5 LINK ---l2----
 
     Ipv4AddressHelper ipAddNd65;      //Definisco blocco di indirizzi
-    ipAddNd65.SetBase("10.0.3.0", "255.255.255.252");    //Struttura del blocco di indirizzi    <--- Cambio da 255.255.255.254 a 255.255.255.252
+    ipAddNd65.SetBase("10.0.3.0", "255.255.255.252");    //Struttura del blocco di indirizzi    
     Ipv4InterfaceContainer nd65Interfaces;    //Definisco un container con devices e IP Set
     nd65Interfaces = ipAddNd65.Assign(PPP65Devices);   //Assegno il blocco di indirizzi ai devices
 
