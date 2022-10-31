@@ -226,9 +226,35 @@ main(int argc, char* argv[])
 
     if(configuration == 0){
 
+        uint32_t portSinkN0 = 2600;
+
+        PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(Ipv4Address::GetAny(), portSinkN0));
+        ApplicationContainer sinkAppsN0 = sinkN0.Install(allNodes.Get(0));
+        sinkAppsN0.Start(Seconds(0.0));
+        sinkAppsN0.Stop(Seconds(20.0));
+
+        OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(2),portSinkN0)));
+        onOffHelperN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+        onOffHelperN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+        //onOffHelperN8.SetAttribute("OnTime", TimeValue(NanoSeconds(3000)));
+        //onOffHelperN8.SetAttribute("OffTime", TimeValue(NanoSeconds(15000)));
+        onOffHelperN8.SetAttribute("PacketSize", UintegerValue(1500));        
+
+        ApplicationContainer onOffAppN8 = onOffHelperN8.Install(allNodes.Get(8));
+        onOffAppN8.Start(Seconds(3.0));
+        onOffAppN8.Stop(Seconds(15.0));
 
 
 
+
+
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+
+        PPP34.EnablePcap("task1-0-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
 
     }
     else if(configuration == 1){
@@ -236,10 +262,32 @@ main(int argc, char* argv[])
 
 
 
+
+
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+
+        PPP34.EnablePcap("task1-1-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-1-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
+
+
     }
     else if(configuration == 2){
 
 
+
+
+
+
+
+
+
+        ///////////////////////////////////////////////////////////////////////////////
+
+        PPP34.EnablePcap("task1-2-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-2-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
 
 
     }
@@ -265,8 +313,8 @@ main(int argc, char* argv[])
 
     //SI ATTENDE LA CREAZIONE DEI NODI PER ABILITARE IL PCAP TRACING, BISOGNA VEDERE COSA METTERE AL POSTO DI "NODE-TYPE"
 
-    //NODE-TYPE.EnablePcap("task1"-configuration-"n3.pcap", n3, true);  // ns-3-manual | P.60
-    //NODE-TYPE.EnablePcap("task1"-configuration-"n6.pcap", n6, true);
+    //PPP34.EnablePcap("task1-0-n3.pcap", PPP34Devices.Get(0), true);  // ns-3-manual | P.60
+    //csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true);
 
     Simulator::Run();
     Simulator::Destroy();
