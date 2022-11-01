@@ -2,9 +2,20 @@
 // Homework N.1 Telecomunicazioni 2022 | hw4
 // Team N.27
 
-// LINK PER CAPIRE IL "/24 E /31" NEGLI INDIRIZZI IP ---> https://it.wikipedia.org/wiki/Maschera_di_sottorete
-
-// DEVONO ESSERE INSERITI GLI INCLUDE ADEGUATI, SUCCESSIVAMENTE ELIMINARE QUESTA RIGA DI COMMENTO PRIMA DELLA CONSEGNA
+/*
+// ====== ATTENZIONE =================
+//
+// La corretta esecuzione del seguente codice dipende da una modifica nei scr file di ns-3.
+// Nello specifico si richiede di svolgere la segente modifica:
+//  1) spostarsi nella seguente directory:
+//      /home/student/ns-3-dev-git/src/internet/model/global-route-manager-impl.cc
+//  2) modificare all'interno del file " global-route-manager-impl.cc " le seguenti righe:
+//       n. 325
+//       n. 326
+//     Procedendo al commento mediante " // "
+//
+// ===================================
+*/
 
 //------ DA RIVEDERE -----------------
 #include "ns3/applications-module.h"
@@ -53,15 +64,15 @@ NS_LOG_COMPONENT_DEFINE("Task_1_Team_27");
 int
 main(int argc, char* argv[])
 {
-    int configuration;  // Scelta della configurazione da eseguire da CMD | ns-3-tutorial P.68
+    int configuration;  // Scelta della configurazione da eseguire da CMD
 
     CommandLine cmd(__FILE__);
-    cmd.AddValue("configuration", "Number of configuration type to run", configuration);    // Scelta della configurazione da eseguire da CMD | ns-3-tutorial P.68
+    cmd.AddValue("configuration", "Number of configuration type to run", configuration);    // Scelta della configurazione da eseguire da CMD
     cmd.Parse(argc, argv);
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    uint32_t nodesNum = 9;
+    uint32_t nodesNum = 9;      // Numero di nodi totali
     //uint32_t nCsmaSX = 2;
     //uint32_t nCsmaDX = 2;
 
@@ -70,7 +81,7 @@ main(int argc, char* argv[])
 
     //------ CSMA SX -----------------------
    
-    NodeContainer csmaSXNodes;  //Contenitore dei nodi CSMA
+    NodeContainer csmaSXNodes;  //Contenitore dei nodi CSMASX
     csmaSXNodes.Add(allNodes.Get(0));
     csmaSXNodes.Add(allNodes.Get(1));
     csmaSXNodes.Add(allNodes.Get(2));     //Nodo n2 in testa al csmaSX, responsabile del csmaSX
@@ -84,10 +95,10 @@ main(int argc, char* argv[])
 
     //------ CSMA DX -----------------------
 
-    NodeContainer csmaDXNodes;
-    csmaDXNodes.Add(allNodes.Get(8));
+    NodeContainer csmaDXNodes;  //Contenitore dei nodi CSMASX
+    csmaDXNodes.Add(allNodes.Get(6));   
     csmaDXNodes.Add(allNodes.Get(7));
-    csmaDXNodes.Add(allNodes.Get(6));     //Nodo n6 in testa al csmaDX, responsabile del csmaDX
+    csmaDXNodes.Add(allNodes.Get(8));     //Nodo n6 in testa al csmaDX, responsabile del csmaDX
 
     CsmaHelper csmaLNKDX;   //Caratteristiche del collegamento
     csmaLNKDX.SetChannelAttribute("DataRate", StringValue("25Mbps"));
@@ -108,8 +119,6 @@ main(int argc, char* argv[])
 
     NetDeviceContainer PPP23Devices;    //Contenitore finale con nodi collegati con link
     PPP23Devices = PPP23.Install(NC23);
-
-    //NON SAPENDO SE FARE n3-n4-n5-n6 COME COLLEGAMENTO A STELLA OPPURE COME SINGOLI, HO SCELTO LA SECONDA
 
     //------ n3-n4 LINK --------------------
 
@@ -165,7 +174,7 @@ main(int argc, char* argv[])
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    InternetStackHelper allStack;
+    InternetStackHelper allStack;   //InternetStackHelper su tutti i nodi 
     allStack.Install(allNodes);
 
     //------ IP Address csmaSX -------------
@@ -226,97 +235,181 @@ main(int argc, char* argv[])
 
     if(configuration == 0){
 
-        uint32_t portSinkN0 = 2600;
+        uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
 
-        PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(Ipv4Address::GetAny(), portSinkN0));
-        ApplicationContainer sinkAppsN0 = sinkN0.Install(allNodes.Get(0));
+        //--------------------------------------  
+
+        PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
+        ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
         sinkAppsN0.Start(Seconds(0.0));
         sinkAppsN0.Stop(Seconds(20.0));
 
-        OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(2),portSinkN0)));
+        //--------------------------------------  
+
+        //OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(0), portSinkN0)));
+        //OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address());
+        OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0)));      //OnOffClient verso n0
+        //AddressValue remoteAddress(InetSocketAddress(csmaSXInterfaces.GetAddress(2), portSinkN0));
+        //onOffHelperN8.SetAttribute("Remote", remoteAddress);
         onOffHelperN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
         onOffHelperN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
         //onOffHelperN8.SetAttribute("OnTime", TimeValue(NanoSeconds(3000)));
         //onOffHelperN8.SetAttribute("OffTime", TimeValue(NanoSeconds(15000)));
-        onOffHelperN8.SetAttribute("PacketSize", UintegerValue(1500));        
+        onOffHelperN8.SetAttribute("PacketSize", UintegerValue(1500));
+                
 
-        ApplicationContainer onOffAppN8 = onOffHelperN8.Install(allNodes.Get(8));
+        ApplicationContainer onOffAppN8;    //OnOffClient installato su n8
+        onOffAppN8.Add(onOffHelperN8.Install(csmaDXNodes.Get(2)));      
         onOffAppN8.Start(Seconds(3.0));
         onOffAppN8.Stop(Seconds(15.0));
 
-
-
-
-
-
-
-
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP34.EnablePcap("task1-0-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
+        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
 
     }
     else if(configuration == 1){
 
+        uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
+        uint32_t TportSinkN7 = 7777;     // TCP Sink Port n7
 
+        //--------------------------------------  
 
+        PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
+        ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
+        sinkAppsN0.Start(Seconds(0.0));
+        sinkAppsN0.Stop(Seconds(20.0));
 
+        PacketSinkHelper sinkN7("ns3::TcpSocketFactory", InetSocketAddress(csmaDXInterfaces.GetAddress(1), TportSinkN7));    //Definisco TCP Sink su n7
+        ApplicationContainer sinkAppsN7 = sinkN7.Install(csmaDXNodes.Get(1));   //PacketSink installato su n7
+        sinkAppsN7.Start(Seconds(0.0));
+        sinkAppsN7.Stop(Seconds(20.0));
 
+        //--------------------------------------
+        
+        OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0)));      //OnOffClient verso n0
+        onOffHelperN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+        onOffHelperN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+        onOffHelperN8.SetAttribute("PacketSize", UintegerValue(2500));
+                
+        ApplicationContainer onOffAppN8;    //OnOffClient installato su n8
+        onOffAppN8.Add(onOffHelperN8.Install(csmaDXNodes.Get(2)));      
+        onOffAppN8.Start(Seconds(5.0));
+        onOffAppN8.Stop(Seconds(15.0));
 
+        //-------------------------------------- 
 
-
+        OnOffHelper onOffHelperN1("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(1), TportSinkN7)));      //OnOffClient TCP verso n7
+        onOffHelperN1.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+        onOffHelperN1.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+        onOffHelperN1.SetAttribute("PacketSize", UintegerValue(5000));
+                
+        ApplicationContainer onOffAppN1;    //OnOffClient installato su n1
+        onOffAppN1.Add(onOffHelperN1.Install(csmaSXNodes.Get(1)));     
+        onOffAppN1.Start(Seconds(2.0));
+        onOffAppN1.Stop(Seconds(9.0));
 
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP34.EnablePcap("task1-1-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-1-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
+        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
 
 
     }
     else if(configuration == 2){
 
+        uint32_t UportSrvN2 = 63;    // UDP Echo Server Port n2
+        uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
+        uint32_t UportSinkN7 = 2500;     // UCP Sink Port n0
+
+        //-------------------------------------- 
+
+        UdpEchoServerHelper echoServerN2(UportSrvN2);     // UDP Echo Server
+
+        ApplicationContainer srvAppN2 = echoServerN2.Install(csmaSXNodes.Get(0));     // UDP Echo Server installato su n2
+        srvAppN2.Start(Seconds(0.0));
+        srvAppN2.Stop(Seconds(20.0));
+
+        //--------------------------------------  
+
+        UdpEchoClientHelper echoClientN8(csmaSXInterfaces.GetAddress(0), UportSrvN2);    // UDP Echo Client verso n2
+        echoClientN8.SetAttribute("MaxPackets", UintegerValue(5));
+        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(3.0)));
+        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(4.0)));
+        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(7.0)));
+        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(9.0)));
+        echoClientN8.SetAttribute("PacketSize", UintegerValue(2560));
 
 
+        ApplicationContainer cltAppN8 = echoClientN8.Install(allNodes.Get(8));     // UDP Echo Client installato su n8
+        cltAppN8.Start(Seconds(0.0));
+        cltAppN8.Stop(Seconds(3.0));
+        cltAppN8.Start(Seconds(3.0));
+        cltAppN8.Stop(Seconds(4.0));
+        cltAppN8.Start(Seconds(4.0));                       // <<< DA RIVEDERE
+        cltAppN8.Stop(Seconds(7.0));
+        cltAppN8.Start(Seconds(7.0));
+        cltAppN8.Stop(Seconds(9.0));
+        cltAppN8.Start(Seconds(9.0));
+        cltAppN8.Stop(Seconds(20.0));
 
+        //--------------------------------------  
 
+        PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
+        ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
+        sinkAppsN0.Start(Seconds(0.0));
+        sinkAppsN0.Stop(Seconds(20.0));
 
+        PacketSinkHelper sinkN7("ns3::UdpSocketFactory", InetSocketAddress(csmaDXInterfaces.GetAddress(1), UportSinkN7));    //Definisco UDP Sink su n7
+        ApplicationContainer sinkAppsN7 = sinkN7.Install(csmaDXNodes.Get(1));   //PacketSink installato su n7
+        sinkAppsN7.Start(Seconds(0.0));
+        sinkAppsN7.Stop(Seconds(20.0));
 
+        //--------------------------------------
+        
+        OnOffHelper onOffHelperTN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0)));      //OnOffClient TCP verso n0
+        onOffHelperTN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+        onOffHelperTN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+        onOffHelperTN8.SetAttribute("PacketSize", UintegerValue(3000));
+                
+        ApplicationContainer onOffAppTN8;    //OnOffClient TCP installato su n8
+        onOffAppTN8.Add(onOffHelperTN8.Install(csmaDXNodes.Get(2)));      
+        onOffAppTN8.Start(Seconds(3.0));
+        onOffAppTN8.Stop(Seconds(9.0));    
 
+        //--------------------------------------
+        
+        OnOffHelper onOffHelperUN8("ns3::UdpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(1), UportSinkN7)));      //OnOffClient UDP verso n7
+        onOffHelperUN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
+        onOffHelperUN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
+        onOffHelperUN8.SetAttribute("PacketSize", UintegerValue(3000));
+                
+        ApplicationContainer onOffAppUN8;    //OnOffClient UDP installato su n8
+        onOffAppUN8.Add(onOffHelperUN8.Install(csmaDXNodes.Get(2)));      
+        onOffAppUN8.Start(Seconds(5.0));
+        onOffAppUN8.Stop(Seconds(15.0));
 
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP34.EnablePcap("task1-2-n3.pcap", PPP34Devices.Get(0), true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-2-n6.pcap", csmaDXDevices.Get(0), true);    // Pcap n6
-
+        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
+        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
 
     }
 
-
-
-
-
-
-
-
-
-
-
     ///////////////////////////////////////////////////////////////////////////////
 
-    //AsciiTraceHelper myTracASCII;
+    AsciiTraceHelper myTracASCII;
 
     //SI ATTENDE LA CREAZIONE DI SERVER E CLIENT PER ABILITARE L'ASCII TRACING
 
     //TCP-SERVER.EnableAsciiAll(myTracASCII.CreateFileStream ("task1"-configuration-<id_del_nodo>".tr"));   // ns-3-manual | P.62
     //UDP-SERVER.EnableAsciiAll(myTracASCII.CreateFileStream ("task1"-configuration-<id_del_nodo>".tr"));
 
-    //SI ATTENDE LA CREAZIONE DEI NODI PER ABILITARE IL PCAP TRACING, BISOGNA VEDERE COSA METTERE AL POSTO DI "NODE-TYPE"
-
-    //PPP34.EnablePcap("task1-0-n3.pcap", PPP34Devices.Get(0), true);  // ns-3-manual | P.60
-    //csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true);
+    Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
     Simulator::Run();
     Simulator::Destroy();
+
     return 0;
 }
