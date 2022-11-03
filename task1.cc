@@ -57,9 +57,8 @@ using namespace ns3;
 
 NS_LOG_COMPONENT_DEFINE("Task_1_Team_27");
 
-int
-main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]){
+
     int configuration;  // Scelta della configurazione da eseguire da CMD
 
     CommandLine cmd(__FILE__);
@@ -254,6 +253,7 @@ main(int argc, char* argv[])
         
         csmaLNKSX.EnableAscii("task1-0-n0.tr",csmaSXDevices.Get(0),true);               //AsciiTracing su n0
         csmaLNKDX.EnableAscii("task1-0-n8.tr",csmaDXDevices.Get(2),true);               //AsciiTracing su n8
+        
     }
     else if(configuration == 1){
 
