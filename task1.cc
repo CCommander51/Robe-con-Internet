@@ -12,24 +12,20 @@
 //  2) modificare all'interno del file " global-route-manager-impl.cc " le seguenti righe:
 //       n. 325
 //       n. 326
-//     Procedendo al commento mediante " // "
+//     Procedendo al commento delle stesse, mediante " // "
 //
 // ===================================
 */
 
-//------ DA RIVEDERE -----------------
+//------------------------------------
 #include "ns3/applications-module.h"
 #include "ns3/core-module.h"
 #include "ns3/internet-module.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
 #include "ns3/point-to-point-module.h"
-//------------------------------------
-
 //------ CSMA ------------------------
 #include "ns3/csma-module.h"
-//------------------------------------
-
 //------ Trace -----------------------
 #include "ns3/object.h"
 #include "ns3/uinteger.h"
@@ -51,7 +47,7 @@
 //  ================                         \___                ___/  ==============================
 // LAN 192.148.1.0/24                            \___        ___/                  LAN 192.148.2.0/24
 //                                  10.0.2.0/30      \      /      10.0.3.0/30
-//                                                    \    /
+//      CSMA SX                                       \    /                        CSMA DX
 //                                                      n5
 //
 // ==========================================================================================================
@@ -82,9 +78,9 @@ main(int argc, char* argv[])
     //------ CSMA SX -----------------------
    
     NodeContainer csmaSXNodes;  //Contenitore dei nodi CSMASX
-    csmaSXNodes.Add(allNodes.Get(0));
-    csmaSXNodes.Add(allNodes.Get(1));
-    csmaSXNodes.Add(allNodes.Get(2));     //Nodo n2 in testa al csmaSX, responsabile del csmaSX
+    csmaSXNodes.Add(allNodes.Get(0));       //Nodo n0 --- Posizione 0
+    csmaSXNodes.Add(allNodes.Get(1));       //Nodo n1 --- Posizione 1
+    csmaSXNodes.Add(allNodes.Get(2));       //Nodo n2 --- Posizione 2
 
     CsmaHelper csmaLNKSX;   //Caratteristiche del collegamento
     csmaLNKSX.SetChannelAttribute("DataRate", StringValue("25Mbps"));
@@ -96,9 +92,9 @@ main(int argc, char* argv[])
     //------ CSMA DX -----------------------
 
     NodeContainer csmaDXNodes;  //Contenitore dei nodi CSMASX
-    csmaDXNodes.Add(allNodes.Get(6));   
-    csmaDXNodes.Add(allNodes.Get(7));
-    csmaDXNodes.Add(allNodes.Get(8));     //Nodo n6 in testa al csmaDX, responsabile del csmaDX
+    csmaDXNodes.Add(allNodes.Get(6));       //Nodo n6 --- Posizione 0
+    csmaDXNodes.Add(allNodes.Get(7));       //Nodo n7 --- Posizione 1
+    csmaDXNodes.Add(allNodes.Get(8));       //Nodo n8 --- Posizione 2
 
     CsmaHelper csmaLNKDX;   //Caratteristiche del collegamento
     csmaLNKDX.SetChannelAttribute("DataRate", StringValue("25Mbps"));
@@ -228,11 +224,6 @@ main(int argc, char* argv[])
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    //Fino a qui sono solo stati creati i vari devices della rete, i canali di comunicazione con
-    //relative specifiche, raggruppati i vari nodi ed assegnati gli  indirizzi ip.
-    //Adesso bisogna inserire un protocollo di comunicazione, le applicazioni per la generazione 
-    //del traffico di dati, definire client e server ed i Trace :)
-
     if(configuration == 0){
 
         uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
@@ -242,22 +233,15 @@ main(int argc, char* argv[])
         PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
         ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
         sinkAppsN0.Start(Seconds(0.0));
-        sinkAppsN0.Stop(Seconds(20.0));
+        sinkAppsN0.Stop(Seconds(20.0));         //Tempo di run della simulazione
 
         //--------------------------------------  
 
-        //OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaDXInterfaces.GetAddress(0), portSinkN0)));
-        //OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address());
         OnOffHelper onOffHelperN8("ns3::TcpSocketFactory", Address(InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0)));      //OnOffClient verso n0
-        //AddressValue remoteAddress(InetSocketAddress(csmaSXInterfaces.GetAddress(2), portSinkN0));
-        //onOffHelperN8.SetAttribute("Remote", remoteAddress);
         onOffHelperN8.SetAttribute("OnTime", StringValue("ns3::ConstantRandomVariable[Constant=1]"));
         onOffHelperN8.SetAttribute("OffTime", StringValue("ns3::ConstantRandomVariable[Constant=0]"));
-        //onOffHelperN8.SetAttribute("OnTime", TimeValue(NanoSeconds(3000)));
-        //onOffHelperN8.SetAttribute("OffTime", TimeValue(NanoSeconds(15000)));
         onOffHelperN8.SetAttribute("PacketSize", UintegerValue(1500));
                 
-
         ApplicationContainer onOffAppN8;    //OnOffClient installato su n8
         onOffAppN8.Add(onOffHelperN8.Install(csmaDXNodes.Get(2)));      
         onOffAppN8.Start(Seconds(3.0));
@@ -265,9 +249,11 @@ main(int argc, char* argv[])
 
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
-
+        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
+        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
+        
+        csmaLNKSX.EnableAscii("task1-0-n0.tr",csmaSXDevices.Get(0),true);               //AsciiTracing su n0
+        csmaLNKDX.EnableAscii("task1-0-n8.tr",csmaDXDevices.Get(2),true);               //AsciiTracing su n8
     }
     else if(configuration == 1){
 
@@ -279,12 +265,12 @@ main(int argc, char* argv[])
         PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
         ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
         sinkAppsN0.Start(Seconds(0.0));
-        sinkAppsN0.Stop(Seconds(20.0));
+        sinkAppsN0.Stop(Seconds(20.0));     //Tempo di run della simulazione
 
         PacketSinkHelper sinkN7("ns3::TcpSocketFactory", InetSocketAddress(csmaDXInterfaces.GetAddress(1), TportSinkN7));    //Definisco TCP Sink su n7
         ApplicationContainer sinkAppsN7 = sinkN7.Install(csmaDXNodes.Get(1));   //PacketSink installato su n7
         sinkAppsN7.Start(Seconds(0.0));
-        sinkAppsN7.Stop(Seconds(20.0));
+        sinkAppsN7.Stop(Seconds(20.0));     //Tempo di run della simulazione
 
         //--------------------------------------
         
@@ -312,59 +298,59 @@ main(int argc, char* argv[])
 
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
-
+        PPP23.EnablePcap("task1-1-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
+        csmaLNKDX.EnablePcap("task1-1-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
+        
+        csmaLNKSX.EnableAscii("task1-1-n0.tr",csmaSXDevices.Get(0),true);               //AsciiTracing su n0
+        csmaLNKSX.EnableAscii("task1-1-n1.tr",csmaSXDevices.Get(1),true);               //AsciiTracing su n1
+        csmaLNKDX.EnableAscii("task1-1-n7.tr",csmaDXDevices.Get(1),true);               //AsciiTracing su n7
+        csmaLNKDX.EnableAscii("task1-1-n8.tr",csmaDXDevices.Get(2),true);               //AsciiTracing su n8
 
     }
     else if(configuration == 2){
 
-        uint32_t UportSrvN2 = 63;    // UDP Echo Server Port n2
-        uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
-        uint32_t UportSinkN7 = 2500;     // UCP Sink Port n0
+        uint32_t UportSrvN2 = 63;           // UDP Echo Server Port n2
+        uint32_t TportSinkN0 = 2600;        // TCP Sink Port n0
+        uint32_t UportSinkN7 = 2500;        // UCP Sink Port n0
+
+        //--------------------------------------
+
+        uint32_t pkSizeN8 = 2560;
+        uint8_t mat[] = {'0', 'x', '5', '8', 'c', 'e', '8', '3'};     //Somma delle matricole in esadecimale
+        uint32_t matSize = sizeof(mat);
 
         //-------------------------------------- 
 
         UdpEchoServerHelper echoServerN2(UportSrvN2);     // UDP Echo Server
 
-        ApplicationContainer srvAppN2 = echoServerN2.Install(csmaSXNodes.Get(0));     // UDP Echo Server installato su n2
+        ApplicationContainer srvAppN2 = echoServerN2.Install(csmaSXNodes.Get(2));     // UDP Echo Server installato su n2
         srvAppN2.Start(Seconds(0.0));
-        srvAppN2.Stop(Seconds(20.0));
+        srvAppN2.Stop(Seconds(20.0));       //Tempo di run della simulazione
 
         //--------------------------------------  
 
-        UdpEchoClientHelper echoClientN8(csmaSXInterfaces.GetAddress(0), UportSrvN2);    // UDP Echo Client verso n2
-        echoClientN8.SetAttribute("MaxPackets", UintegerValue(5));
-        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(3.0)));
-        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(4.0)));
-        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(7.0)));
-        //echoClientN8.SetAttribute("Start", TimeValue(Seconds(9.0)));
+        UdpEchoClientHelper echoClientN8(csmaSXInterfaces.GetAddress(2), UportSrvN2);    // UDP Echo Client verso n2
+        echoClientN8.SetAttribute("MaxPackets", UintegerValue(1));
+        echoClientN8.SetAttribute("Interval", TimeValue(Seconds(2.0)));
         echoClientN8.SetAttribute("PacketSize", UintegerValue(2560));
 
-
         ApplicationContainer cltAppN8 = echoClientN8.Install(allNodes.Get(8));     // UDP Echo Client installato su n8
-        cltAppN8.Start(Seconds(0.0));
-        cltAppN8.Stop(Seconds(3.0));
         cltAppN8.Start(Seconds(3.0));
-        cltAppN8.Stop(Seconds(4.0));
-        cltAppN8.Start(Seconds(4.0));                       // <<< DA RIVEDERE
-        cltAppN8.Stop(Seconds(7.0));
-        cltAppN8.Start(Seconds(7.0));
-        cltAppN8.Stop(Seconds(9.0));
-        cltAppN8.Start(Seconds(9.0));
-        cltAppN8.Stop(Seconds(20.0));
-
+        cltAppN8.Stop(Seconds(12.99));
+        
+        echoClientN8.SetFill(cltAppN8.Get(0), mat, matSize, pkSizeN8);      //Payload Pacchetti UDP
+        
         //--------------------------------------  
 
         PacketSinkHelper sinkN0("ns3::TcpSocketFactory", InetSocketAddress(csmaSXInterfaces.GetAddress(0), TportSinkN0));    //Definisco TCP Sink su n0
         ApplicationContainer sinkAppsN0 = sinkN0.Install(csmaSXNodes.Get(0));   //PacketSink installato su n0
         sinkAppsN0.Start(Seconds(0.0));
-        sinkAppsN0.Stop(Seconds(20.0));
+        sinkAppsN0.Stop(Seconds(20.0));     //Tempo di run della simulazione
 
         PacketSinkHelper sinkN7("ns3::UdpSocketFactory", InetSocketAddress(csmaDXInterfaces.GetAddress(1), UportSinkN7));    //Definisco UDP Sink su n7
         ApplicationContainer sinkAppsN7 = sinkN7.Install(csmaDXNodes.Get(1));   //PacketSink installato su n7
         sinkAppsN7.Start(Seconds(0.0));
-        sinkAppsN7.Stop(Seconds(20.0));
+        sinkAppsN7.Stop(Seconds(20.0));     //Tempo di run della simulazione
 
         //--------------------------------------
         
@@ -392,19 +378,17 @@ main(int argc, char* argv[])
 
         ///////////////////////////////////////////////////////////////////////////////
 
-        PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);  // Pcap n3
-        csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);    // Pcap n6
+        PPP23.EnablePcap("task1-2-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
+        csmaLNKDX.EnablePcap("task1-2-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
+
+        csmaLNKSX.EnableAscii("task1-2-n0.tr",csmaSXDevices.Get(0),true);               //AsciiTracing su n0
+        csmaLNKSX.EnableAscii("task1-2-n2.tr",csmaSXDevices.Get(2),true);               //AsciiTracing su n2
+        csmaLNKDX.EnableAscii("task1-2-n7.tr",csmaDXDevices.Get(1),true);               //AsciiTracing su n7
+        csmaLNKDX.EnableAscii("task1-2-n8.tr",csmaDXDevices.Get(0),true);               //AsciiTracing su n8
 
     }
 
     ///////////////////////////////////////////////////////////////////////////////
-
-    AsciiTraceHelper myTracASCII;
-
-    //SI ATTENDE LA CREAZIONE DI SERVER E CLIENT PER ABILITARE L'ASCII TRACING
-
-    //TCP-SERVER.EnableAsciiAll(myTracASCII.CreateFileStream ("task1"-configuration-<id_del_nodo>".tr"));   // ns-3-manual | P.62
-    //UDP-SERVER.EnableAsciiAll(myTracASCII.CreateFileStream ("task1"-configuration-<id_del_nodo>".tr"));
 
     Ipv4GlobalRoutingHelper::PopulateRoutingTables();
 
