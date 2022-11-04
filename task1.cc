@@ -65,13 +65,15 @@ int main(int argc, char* argv[]){
     cmd.AddValue("configuration", "Number of configuration type to run", configuration);    // Scelta della configurazione da eseguire da CMD
     cmd.Parse(argc, argv);
 
+    Time::SetResolution(Time::NS);      //Riferito a NS_LOG_INFO
+
     ///////////////////////////////////////////////////////////////////////////////
 
-    uint32_t nodesNum = 9;      // Numero di nodi totali
-    //uint32_t nCsmaSX = 2;
-    //uint32_t nCsmaDX = 2;
+    NS_LOG_INFO("Creazione dei nodi e dei relativi container");        //STATUS LOG INFO LEVEL
 
-    NodeContainer allNodes;
+    uint32_t nodesNum = 9;      // Numero di nodi totali
+
+    NodeContainer allNodes;     //Contenitore di tutti i nodi della rete
     allNodes.Create(nodesNum);
 
     //------ CSMA SX -----------------------
@@ -167,7 +169,11 @@ int main(int argc, char* argv[]){
     NetDeviceContainer PPP65Devices;    //Contenitore finale con nodi collegati con link
     PPP65Devices = PPP65.Install(NC65);
 
+    NS_LOG_INFO("Fine creazione topologia di rete");        //STATUS LOG INFO LEVEL
+
     ///////////////////////////////////////////////////////////////////////////////
+
+    NS_LOG_INFO("Creazione del blocco di indirizzi IP per ogni container definito");        //STATUS LOG INFO LEVEL
 
     InternetStackHelper allStack;   //InternetStackHelper su tutti i nodi 
     allStack.Install(allNodes);
@@ -221,9 +227,14 @@ int main(int argc, char* argv[]){
     Ipv4InterfaceContainer nd65Interfaces;    //Definisco un container con devices e IP Set
     nd65Interfaces = ipAddNd65.Assign(PPP65Devices);   //Assegno il blocco di indirizzi ai devices
 
+    NS_LOG_INFO("Fine definizione blocco di indirizzi IP");        //STATUS LOG INFO LEVEL
+
     ///////////////////////////////////////////////////////////////////////////////
 
     if(configuration == 0){
+
+        NS_LOG_INFO("START");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 0");        //STATUS LOG INFO LEVEL
 
         uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
 
@@ -248,14 +259,23 @@ int main(int argc, char* argv[]){
 
         ///////////////////////////////////////////////////////////////////////////////
 
+        LogComponentEnable("PacketSink", LOG_LEVEL_INFO);           //LOG abilitato per TCP PKSINK  (N0)
+        LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);     //LOG abilitato per TCP ONOFFAPP    (N8)
+
         PPP23.EnablePcap("task1-0-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
         csmaLNKDX.EnablePcap("task1-0-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
         
         csmaLNKSX.EnableAscii("task1-0-n0.tr",csmaSXDevices.Get(0),true);               //AsciiTracing su n0
         csmaLNKDX.EnableAscii("task1-0-n8.tr",csmaDXDevices.Get(2),true);               //AsciiTracing su n8
+
+        NS_LOG_INFO("END");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 0");        //STATUS LOG INFO LEVEL
         
     }
     else if(configuration == 1){
+
+        NS_LOG_INFO("START");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 1");        //STATUS LOG INFO LEVEL
 
         uint32_t TportSinkN0 = 2600;     // TCP Sink Port n0
         uint32_t TportSinkN7 = 7777;     // TCP Sink Port n7
@@ -298,6 +318,9 @@ int main(int argc, char* argv[]){
 
         ///////////////////////////////////////////////////////////////////////////////
 
+        LogComponentEnable("PacketSink", LOG_LEVEL_INFO);           //LOG abilitato per TCP PKSINK  (N0, N7)
+        LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);     //LOG abilitato per TCP ONOFFAPP    (N8, N1)
+
         PPP23.EnablePcap("task1-1-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
         csmaLNKDX.EnablePcap("task1-1-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
         
@@ -306,8 +329,14 @@ int main(int argc, char* argv[]){
         csmaLNKDX.EnableAscii("task1-1-n7.tr",csmaDXDevices.Get(1),true);               //AsciiTracing su n7
         csmaLNKDX.EnableAscii("task1-1-n8.tr",csmaDXDevices.Get(2),true);               //AsciiTracing su n8
 
+        NS_LOG_INFO("END");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 0");        //STATUS LOG INFO LEVEL
+
     }
     else if(configuration == 2){
+
+        NS_LOG_INFO("START");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 2");        //STATUS LOG INFO LEVEL
 
         uint32_t UportSrvN2 = 63;           // UDP Echo Server Port n2
         uint32_t TportSinkN0 = 2600;        // TCP Sink Port n0
@@ -378,6 +407,11 @@ int main(int argc, char* argv[]){
 
         ///////////////////////////////////////////////////////////////////////////////
 
+        LogComponentEnable("UdpEchoServerApplication", LOG_LEVEL_INFO);     //LOG abilitato per UDP SERVER (N2)
+        LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);     //LOG abilitato per UDP CLIENT (N8)
+        LogComponentEnable("PacketSink", LOG_LEVEL_INFO);       //LOG abilitato per TCP PKSINK (N0) & UDP PKSINK (N7)
+        LogComponentEnable("OnOffApplication", LOG_LEVEL_INFO);     //LOG abilitato per TCP ONOFFAPP (N8) & UDP ONOFFAPP (N8)
+
         PPP23.EnablePcap("task1-2-n3.pcap", PPP23Devices.Get(1), true, true);           //Pcap su n3
         csmaLNKDX.EnablePcap("task1-2-n6.pcap", csmaDXDevices.Get(0), true, true);      //Pcap su n6
 
@@ -385,6 +419,9 @@ int main(int argc, char* argv[]){
         csmaLNKSX.EnableAscii("task1-2-n2.tr",csmaSXDevices.Get(2),true);               //AsciiTracing su n2
         csmaLNKDX.EnableAscii("task1-2-n7.tr",csmaDXDevices.Get(1),true);               //AsciiTracing su n7
         csmaLNKDX.EnableAscii("task1-2-n8.tr",csmaDXDevices.Get(0),true);               //AsciiTracing su n8
+
+        NS_LOG_INFO("END");        //STATUS LOG INFO LEVEL
+        NS_LOG_INFO("Configuration 2");        //STATUS LOG INFO LEVEL
 
     }
 
