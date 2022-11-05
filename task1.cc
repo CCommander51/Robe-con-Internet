@@ -359,7 +359,7 @@ int main(int argc, char* argv[]){
         //--------------------------------------  
 
         UdpEchoClientHelper echoClientN8(csmaSXInterfaces.GetAddress(2), UportSrvN2);    // UDP Echo Client verso n2
-        echoClientN8.SetAttribute("MaxPackets", UintegerValue(1));
+        echoClientN8.SetAttribute("MaxPackets", UintegerValue(5));
         echoClientN8.SetAttribute("Interval", TimeValue(Seconds(2.0)));
         echoClientN8.SetAttribute("PacketSize", UintegerValue(2560));
 
