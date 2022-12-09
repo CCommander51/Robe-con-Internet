@@ -72,6 +72,25 @@ int main(int argc, char* argv[]){
 
     ///////////////////////////////////////////////////////////////////////////////
 
+    /*
+    StringValue state;
+    if(useRtsCts){
+        state = "on";
+    }
+    else()
+    */
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    if(useRtsCts){
+
+        UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346)) ;                                // DA RIVEDERE
+        Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsThreshold);
+
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+
     NS_LOG_INFO("Creazione dei nodi e dei relativi container");        //STATUS LOG INFO LEVEL
 
     uint32_t nodesNum = 5;      // Numero di nodi totali
@@ -85,9 +104,10 @@ int main(int argc, char* argv[]){
 
     WifiMacHelper macAdHocMod; 
     macAdHocMod.SetType("ns3::AdhocWifiMac");   // Definizione modalità operativa
-
+    
     WifiHelper wifiAdHocMod;    // Helper per creare ed installare WiFi devices
-    wifiAdHocMod.SetStandard(WIFI_STANDARD_80211g); // Definizione di standard da usare, andrà a sovrascrivere i valori di default impostati precedentemente
+    wifiAdHocMod.SetStandard(WifiStandard(WIFI_STANDARD_80211g)); // Definizione di standard da usare, andrà a sovrascrivere i valori di default impostati precedentemente
+    wifiAdHocMod.SetRemoteStationManager("ns3::AarfWifiManager");
 
     NetDeviceContainer adHocModDevices;      // Contenitore finale con nodi collegati con link
     adHocModDevices = wifiAdHocMod.Install(phyAdHocMod, macAdHocMod, allWifiAdHocModNodes);
@@ -182,9 +202,26 @@ int main(int argc, char* argv[]){
         LogComponentEnable("UdpEchoClientApplication", LOG_LEVEL_INFO);     //LOG abilitato per UDP CLIENT (n3, n4)
     }
 
-    phyAdHocMod.EnablePcap("task1-n2.pcap", adHocModDevices.Get(2), true, true);           //Pcap su n2
+    // phyAdHocMod.EnablePcap("task1-off-n2.pcap", adHocModDevices.Get(2), true, true);           //Pcap su n2 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
 
     NS_LOG_INFO("END");        //STATUS LOG INFO LEVEL
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    if(useRtsCts){
+
+        // UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346)) ;                                // DA RIVEDERE
+        // Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsThreshold);
+
+        phyAdHocMod.EnablePcap("task1-on-n2.pcap", adHocModDevices.Get(2), true, true);           //Pcap su n2 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+
+    }
+
+    else{
+
+        phyAdHocMod.EnablePcap("task1-off-n2.pcap", adHocModDevices.Get(2), true, true);           //Pcap su n2 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -192,10 +229,39 @@ int main(int argc, char* argv[]){
 
         if(useRtsCts){
 
-            UintegerValue ctsThreshold = UintegerValue(100);                                // DA RIVEDERE
-            Config::SetDefault("ns3::AarWiFiManager::RtsCtsThreshold", ctsThreshold);
+            UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346)) ;                                // DA RIVEDERE
+            Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsThreshold);
 
             AnimationInterface netAnimAdHocMode ("wireless-task1-rts-on.xml");
+
+            netAnimAdHocMode.UpdateNodeDescription(allWifiAdHocModNodes.Get(0), "SRV-0"); // Nodo n0 SRV
+            netAnimAdHocMode.UpdateNodeColor(allWifiAdHocModNodes.Get(0), 255, 0, 0);   // R, G, B
+
+            netAnimAdHocMode.UpdateNodeDescription(allWifiAdHocModNodes.Get(1), "HOC-1"); // Nodo n1
+            netAnimAdHocMode.UpdateNodeColor(allWifiAdHocModNodes.Get(1), 0, 0, 255);   // R, G, B
+
+            netAnimAdHocMode.UpdateNodeDescription(allWifiAdHocModNodes.Get(2), "HOC-2"); // Nodo n2 PCAP
+            netAnimAdHocMode.UpdateNodeColor(allWifiAdHocModNodes.Get(2), 0, 0, 255);   // R, G, B
+
+            netAnimAdHocMode.UpdateNodeDescription(allWifiAdHocModNodes.Get(3), "CLI-3"); // Nodo n3 CLI
+            netAnimAdHocMode.UpdateNodeColor(allWifiAdHocModNodes.Get(3), 0, 255, 0);   // R, G, B
+
+            netAnimAdHocMode.UpdateNodeDescription(allWifiAdHocModNodes.Get(4), "CLI-4"); // Nodo n4 CLI
+            netAnimAdHocMode.UpdateNodeColor(allWifiAdHocModNodes.Get(4), 0, 255, 0);   // R, G, B
+        
+            netAnimAdHocMode.EnablePacketMetadata();    // Packet Metadata
+
+            netAnimAdHocMode.EnableWifiMacCounters(Seconds(0), Seconds(10)); // Tracing MAC
+            netAnimAdHocMode.EnableWifiPhyCounters(Seconds(0), Seconds(10)); // Tracing PHY
+
+            // Ipv4GlobalRoutingHelper::PopulateRoutingTables();
+            Simulator::Stop(Seconds(12.0));
+
+            Simulator::Run();
+            Simulator::Destroy();
+
+            return 0;
+
         }
         
         AnimationInterface netAnimAdHocMode ("wireless-task1-rts-off.xml");
