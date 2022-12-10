@@ -61,13 +61,13 @@ int main(int argc, char* argv[]){
     bool useRtsCts = false;  // Forza l'utilizzo dell'handshake RTS/CTS
     bool verbose = false; // Abilita l'uso dei LOG (SRV e CLT) per UDP application
     bool useNetAnim = false; // Genera file per l'analisi su NetAnim
-    // StringValue ssid; // Parametro SSID AP      <--- DA IMPOSTARE DEFAULT = "TLC2022"
+    std::string ssid; // Parametro SSID AP
 
     CommandLine cmd(__FILE__);
     cmd.AddValue("useRtsCts", "Force the use of Rts and Cts", useRtsCts);    // Scelta di useRtsCts da CMD
     cmd.AddValue("verbose", "Enable the use of Logs on SRV and CLI", verbose);    // Scelta di verbose da CMD
     cmd.AddValue("useNetAnim", "Enable file generation for NetAnim", useNetAnim);    // Scelta di useNetAnim da CMD
-    // cmd.AddValue("ssid", "Enable file generation for NetAnim", ssid);    // Parametro SSID AP
+    cmd.AddValue("ssid", "Enable file generation for NetAnim", ssid);    // Parametro SSID AP
 
     cmd.Parse(argc, argv);
 
@@ -77,6 +77,14 @@ int main(int argc, char* argv[]){
 
     UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346)) ;                              
     Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsThreshold);
+
+    ///////////////////////////////////////////////////////////////////////////////
+
+    if(ssid == ""){
+
+        ssid = "TLC2022";       // Impostazione parametro di default a ssid (se non indicato da cmd)
+
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
 
@@ -106,7 +114,7 @@ int main(int argc, char* argv[]){
     wifiApMod.SetRemoteStationManager("ns3::AarfWifiManager");
 
     WifiMacHelper macApMod;
-    Ssid ssidAp = Ssid("TLC2022");             // DA RIVEDERE, variabile: ssid            <--- DA IMPOSTARE DEFAULT = "TLC2022"
+    Ssid ssidAp = Ssid(ssid);       // Impostazione SSID
 
     macApMod.SetType("ns3::StaWifiMac", "Ssid", SsidValue(ssidAp), "ActiveProbing", BooleanValue(false));  // Definizione modalità operativa per STA
 
