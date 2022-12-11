@@ -214,7 +214,7 @@ int main(int argc, char* argv[]){
     echoClientN4.SetAttribute("Interval", TimeValue(Seconds(1.0)));
     echoClientN4.SetAttribute("PacketSize", UintegerValue(pkSize));
 
-    ApplicationContainer cltAppN4 = echoClientN4.Install(staWifiApModNodes.Get(3));     // UDP Echo Client installato su n4
+    ApplicationContainer cltAppN4 = echoClientN4.Install(staWifiApModNodes.Get(4));     // UDP Echo Client installato su n4
     cltAppN4.Start(Seconds(1.0));
     cltAppN4.Stop(Seconds(2.0));
     cltAppN4.Start(Seconds(4.0));
