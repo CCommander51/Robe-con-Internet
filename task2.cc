@@ -12,21 +12,25 @@
 #include "ns3/ipv4-address-helper.h"
 #include "ns3/ipv4-global-routing-helper.h"
 #include "ns3/network-module.h"
-#include "ns3/point-to-point-module.h"
 #include "ns3/on-off-helper.h"
-#include "ns3/netanim-module.h"
 #include "ns3/packet-socket-address.h"
 #include "ns3/packet-socket-helper.h"
 #include "ns3/string.h"
-#include "ns3/ssid.h"
 #include "ns3/uinteger.h"
+//------ RNG -------------------------
+// #include "rng-seed-manager.h"
+// Il parametro RngRun viene passato da cmd ( --RngRun=<..>)
+// come indicato da una risposta per email, ad RngRun si deve
+// passare la somma delle matricole dei componenti del gruppo;
+// per questo gruppo il parametro risulta:
+// 1938802 + 1959164 + 1922069 = 5820035    -->     --RngRun=5820035
 //------ WiFi ------------------------
 #include "ns3/mobility-module.h"
 #include "ns3/mobility-helper.h"
 #include "ns3/yans-wifi-channel.h"
 #include "ns3/ssid.h"
-// #include "wifi-phy-standard.h"
 #include "ns3/yans-wifi-helper.h"
+// #include "wifi-phy-standard.h"
 //------ NetAnim ---------------------
 #include "ns3/netanim-module.h"
 //------ Trace -----------------------
@@ -136,11 +140,11 @@ int main(int argc, char* argv[]){
 
     mobilityApMod.SetPositionAllocator(
         "ns3::GridPositionAllocator",       // Allocate positions on a rectangular 2d grid
-        "MinX", DoubleValue(3.5),           // The x coordinate where the grid starts
-        "MinY", DoubleValue(10.0),           // The y coordinate where the grid starts
-        "DeltaX", DoubleValue(3.0),         // The x space between objects
-        "DeltaY", DoubleValue(3.0),        // The y space between objects
-        "GridWidth", UintegerValue(5),      // The number of objects layed out on a line
+        "MinX", DoubleValue(0.0),           // The x coordinate where the grid starts
+        "MinY", DoubleValue(0.0),           // The y coordinate where the grid starts
+        "DeltaX", DoubleValue(5.0),         // The x space between objects
+        "DeltaY", DoubleValue(10.0),        // The y space between objects
+        "GridWidth", UintegerValue(3),      // The number of objects layed out on a line
         "LayoutType", StringValue("RowFirst")   // The type of layout
     );
 
@@ -236,12 +240,16 @@ int main(int argc, char* argv[]){
     if(useRtsCts){
 
         phyApMod.EnablePcap("task2-on-n4.pcap", staApModDevices.Get(4), true, true);           //Pcap su n4 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+        phyApMod.EnablePcap("task2-on-n5.pcap", apApModDevices.Get(0), true, true);           //Pcap su n5 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+
 
     }
 
     else{
 
         phyApMod.EnablePcap("task2-off-n4.pcap", staApModDevices.Get(4), true, true);           //Pcap su n4 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+        phyApMod.EnablePcap("task2-off-n5.pcap", apApModDevices.Get(0), true, true);           //Pcap su n5 [ task(1|2)-<state>-<id_del_nodo>.<formato_file_richiesto> ]
+
 
     }
 
