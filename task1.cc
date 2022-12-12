@@ -77,7 +77,7 @@ int main(int argc, char* argv[]){
 
     ///////////////////////////////////////////////////////////////////////////////
 
-    UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346)) ;                              
+    UintegerValue ctsThreshold = (useRtsCts ? UintegerValue(100) : UintegerValue(2346));                              
     Config::SetDefault("ns3::WifiRemoteStationManager::RtsCtsThreshold", ctsThreshold);
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]){
 
     ApplicationContainer cltAppN3 = echoClientN3.Install(allWifiAdHocModNodes.Get(3));     // UDP Echo Client installato su n3
     cltAppN3.Start(Seconds(2.0));
-    cltAppN3.Stop(Seconds(5.0));
+    cltAppN3.Stop(Seconds(4.5));
 
     ///////////////////////////////////////////////////////////////////////////////
 
