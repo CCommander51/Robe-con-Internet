@@ -205,20 +205,18 @@ int main(int argc, char* argv[]){
 
     ApplicationContainer cltAppN3 = echoClientN3.Install(staWifiApModNodes.Get(3));     // UDP Echo Client installato su n3
     cltAppN3.Start(Seconds(2.0));
-    cltAppN3.Stop(Seconds(5.0));
+    cltAppN3.Stop(Seconds(4.5));
 
     //--------------------------------------  
 
     UdpEchoClientHelper echoClientN4(staApModNodesInterfaces.GetAddress(0), UportSrvN0);    // UDP Echo Client verso n0
-    echoClientN4.SetAttribute("MaxPackets", UintegerValue(1));
-    echoClientN4.SetAttribute("Interval", TimeValue(Seconds(1.0)));
+    echoClientN4.SetAttribute("MaxPackets", UintegerValue(2));
+    echoClientN4.SetAttribute("Interval", TimeValue(Seconds(3.0)));
     echoClientN4.SetAttribute("PacketSize", UintegerValue(pkSize));
 
     ApplicationContainer cltAppN4 = echoClientN4.Install(staWifiApModNodes.Get(4));     // UDP Echo Client installato su n4
     cltAppN4.Start(Seconds(1.0));
-    cltAppN4.Stop(Seconds(2.0));
-    cltAppN4.Start(Seconds(4.0));
-    cltAppN4.Stop(Seconds(5.0));
+    cltAppN4.Stop(Seconds(4.5));
 
     ///////////////////////////////////////////////////////////////////////////////
 
